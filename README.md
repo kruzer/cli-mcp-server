@@ -60,6 +60,7 @@ Configure the server using environment variables:
 | `ALLOWED_DIR`       | Base directory for command execution (Required)      | None (Required)   |
 | `ALLOWED_COMMANDS`  | Comma-separated list of allowed commands or 'all'    | `ls,cat,pwd`      |
 | `ALLOWED_FLAGS`     | Comma-separated list of allowed flags or 'all'       | `-l,-a,--help`    |
+| `ALLOWED_SUDO_COMMANDS` | Comma-separated list of allowed sudo commands or 'all' | `` (None)   |
 | `MAX_COMMAND_LENGTH`| Maximum command string length                        | `1024`            |
 | `COMMAND_TIMEOUT`   | Command execution timeout (seconds)                  | `30`              |
 
@@ -94,6 +95,31 @@ Executes whitelisted CLI commands within allowed directories.
 - Commands must be whitelisted unless ALLOWED_COMMANDS='all'
 - Flags must be whitelisted unless ALLOWED_FLAGS='all'
 - All paths are validated to be within ALLOWED_DIR
+
+### run_sudo_command
+
+Executes whitelisted commands with sudo privileges within allowed directories.
+
+**Input Schema:**
+```json
+{
+  "command": {
+    "type": "string",
+    "description": "Single command to execute with sudo (e.g., 'apt update' or 'systemctl restart service')"
+  },
+  "password": {
+    "type": "string",
+    "description": "Sudo password (optional, will attempt passwordless sudo if not provided)"
+  }
+}
+```
+
+**Security Notes:**
+- Shell operators (&&, |, >, >>) are not supported
+- Commands must be whitelisted in ALLOWED_SUDO_COMMANDS unless ALLOWED_SUDO_COMMANDS='all'
+- Flags must be whitelisted unless ALLOWED_FLAGS='all'
+- All paths are validated to be within ALLOWED_DIR
+- Only available if ALLOWED_SUDO_COMMANDS is configured
 
 ### show_security_rules
 
@@ -146,6 +172,7 @@ Add to your `~/Library/Application\ Support/Claude/claude_desktop_config.json`:
         "ALLOWED_DIR": "</your/desired/dir>",
         "ALLOWED_COMMANDS": "ls,cat,pwd,echo",
         "ALLOWED_FLAGS": "-l,-a,--help,--version",
+        "ALLOWED_SUDO_COMMANDS": "apt-get,systemctl",
         "MAX_COMMAND_LENGTH": "1024",
         "COMMAND_TIMEOUT": "30"
       }
