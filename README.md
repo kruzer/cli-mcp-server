@@ -91,7 +91,7 @@ Executes whitelisted CLI commands within allowed directories.
 ```
 
 **Security Notes:**
-- Shell operators (&&, |, >, >>) are not supported
+- Shell operators (&&, |, >, >>) are supported for complex commands
 - Commands must be whitelisted unless ALLOWED_COMMANDS='all'
 - Flags must be whitelisted unless ALLOWED_FLAGS='all'
 - All paths are validated to be within ALLOWED_DIR

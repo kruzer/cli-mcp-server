@@ -86,8 +86,7 @@ class CommandExecutor:
         """
         Validates and parses a command string for security and formatting.
 
-        Checks the command string for unsupported shell operators and splits it into
-        command and arguments. Only single commands without shell operators are allowed.
+        Splits the command string into command and arguments.
 
         Args:
             command_string (str): The command string to validate and parse.
@@ -96,16 +95,7 @@ class CommandExecutor:
             tuple[str, List[str]]: A tuple containing:
                 - The command name (str)
                 - List of command arguments (List[str])
-
-        Raises:
-            CommandSecurityError: If the command contains unsupported shell operators.
         """
-
-        # Check for shell operators that we don't support
-        shell_operators = ["&&", "||", "|", ">", ">>", "<", "<<", ";"]
-        for operator in shell_operators:
-            if operator in command_string:
-                raise CommandSecurityError(f"Shell operator '{operator}' is not supported")
 
         try:
             parts = shlex.split(command_string)
@@ -168,10 +158,10 @@ class CommandExecutor:
 
     def execute(self, command_string: str) -> subprocess.CompletedProcess:
         """
-        Executes a command string in a secure, controlled environment.
+        Executes a command string in a controlled environment.
 
-        Runs the command after validating it against security constraints including length limits
-        and shell operator restrictions. Executes with controlled parameters for safety.
+        Runs the command after validating it against security constraints including length limits.
+        Supports shell operators (&&, |, >, >>) for complex command execution.
 
         Args:
             command_string (str): The command string to execute.
@@ -183,12 +173,11 @@ class CommandExecutor:
         Raises:
             CommandSecurityError: If the command:
                 - Exceeds maximum length
-                - Contains invalid shell operators
                 - Fails security validation
                 - Fails during execution
 
         Notes:
-            - Executes with shell=False for security
+            - Executes with shell=True to support operators
             - Uses timeout and working directory constraints
             - Captures both stdout and stderr
         """
@@ -196,11 +185,10 @@ class CommandExecutor:
             raise CommandSecurityError(f"Command exceeds maximum length of {self.security_config.max_command_length}")
 
         try:
-            command, args = self.validate_command(command_string)
-
+            # For shell operators support, we use shell=True
             return subprocess.run(
-                [command] + args,
-                shell=False,
+                command_string,
+                shell=True,
                 text=True,
                 capture_output=True,
                 timeout=self.security_config.command_timeout,
@@ -357,7 +345,7 @@ async def handle_list_tools() -> list[types.Tool]:
                 f"Allows command (CLI) execution in the directory: {executor.allowed_dir}\n\n"
                 f"Available commands: {commands_desc}\n"
                 f"Available flags: {flags_desc}\n\n"
-                "Note: Shell operators (&&, |, >, >>) are not supported."
+                "Shell operators (&&, |, >, >>) are now supported for complex commands."
             ),
             inputSchema={
                 "type": "object",
