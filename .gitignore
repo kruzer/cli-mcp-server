@@ -11,3 +11,4 @@ wheels/
 
 # PyCharm
 .idea/
+.aider*
