@@ -161,7 +161,7 @@ class CommandExecutor:
         Executes a command string in a controlled environment.
 
         Runs the command after validating it against security constraints including length limits.
-        Supports shell operators (&&, |, >, >>) for complex command execution.
+        Supports shell operators (&&, |, >, >>) for complex command execution. Doesn't allow to run sudo commands
 
         Args:
             command_string (str): The command string to execute.
@@ -173,6 +173,7 @@ class CommandExecutor:
         Raises:
             CommandSecurityError: If the command:
                 - Exceeds maximum length
+                - Contains sudo command
                 - Fails security validation
                 - Fails during execution
 
@@ -183,6 +184,10 @@ class CommandExecutor:
         """
         if len(command_string) > self.security_config.max_command_length:
             raise CommandSecurityError(f"Command exceeds maximum length of {self.security_config.max_command_length}")
+        
+        # Block sudo commands - check for 'sudo' as a standalone command
+        if re.search(r'\bsudo\b', command_string):
+            raise CommandSecurityError("Sudo commands are not allowed in this function; use execute_sudo instead")
 
         try:
             # For shell operators support, we use shell=True
